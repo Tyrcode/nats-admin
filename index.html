@@ -199,47 +199,63 @@
                 </div>
               </div>
             </div>
-            <div class="flex flex-col md:flex-row gap-4 mb-4 items-end">
-              <div class="flex md:flex-row gap-1 items-end md:w-2/3">
-                <div>
-                  <label
-                    for="protocolSelect"
-                    class="block text-sm font-medium mb-1"
-                    data-i18n="protocol"
-                  >
-                    Protocolo
-                  </label>
-                  <select
-                    id="protocolSelect"
-                    class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="ws">ws://</option>
-                    <option value="wss">wss://</option>
-                  </select>
+            <div class="flex flex-col gap-4 mb-4">
+              <div class="flex flex-col md:flex-row gap-4 items-end">
+                <div class="flex md:flex-row gap-1 items-end md:w-2/3">
+                  <div>
+                    <label
+                      for="protocolSelect"
+                      class="block text-sm font-medium mb-1"
+                      data-i18n="protocol"
+                    >
+                      Protocolo
+                    </label>
+                    <select
+                      id="protocolSelect"
+                      class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="ws">ws://</option>
+                      <option value="wss">wss://</option>
+                    </select>
+                  </div>
+                  <div class="w-full md:w-2/3">
+                    <label
+                      for="natsUrl"
+                      class="block text-sm font-medium mb-1"
+                      data-i18n="hostPort"
+                      >Host y Puerto (Ej: localhost:8080)</label
+                    >
+                    <input
+                      id="natsUrl"
+                      type="text"
+                      class="w-full p-2 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                      value="localhost:8080"
+                      placeholder="Host:Puerto"
+                    />
+                  </div>
                 </div>
-                <div class="w-full md:w-2/3">
-                  <label
-                    for="natsUrl"
-                    class="block text-sm font-medium mb-1"
-                    data-i18n="hostPort"
-                    >Host y Puerto (Ej: localhost:8080)</label
-                  >
-                  <input
-                    id="natsUrl"
-                    type="text"
-                    class="w-full p-2 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                    value="localhost:8080"
-                    placeholder="Host:Puerto"
-                  />
-                </div>
+                <button
+                  id="connectBtn"
+                  class="w-full md:w-1/3 disabled:opacity-50 bg-green-600 hover:bg-green-700 text-white font-bold text-base py-2 px-6 rounded-lg transition duration-150 shadow-lg hover:shadow-xl"
+                  data-i18n="connectBtn"
+                >
+                  Conectar
+                </button>
               </div>
-              <button
-                id="connectBtn"
-                class="w-full md:w-1/3 disabled:opacity-50 bg-green-600 hover:bg-green-700 text-white font-bold text-base py-2 px-6 rounded-lg transition duration-150 shadow-lg hover:shadow-xl"
-                data-i18n="connectBtn"
-              >
-                Conectar
-              </button>
+              <div class="w-full">
+                <label
+                  for="monitorUrl"
+                  class="block text-sm font-medium mb-1"
+                  data-i18n="monitorUrl"
+                >URL de Monitoreo (Ej: localhost:8222)</label>
+                <input
+                  id="monitorUrl"
+                  type="text"
+                  class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                  value="localhost:8222"
+                  placeholder="localhost:8222"
+                />
+              </div>
             </div>
 
             <div

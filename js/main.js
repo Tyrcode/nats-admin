@@ -1,12 +1,13 @@
+import * as Nats from "https://cdn.jsdelivr.net/npm/nats.ws@1.30.3/esm/nats.js";
 import { I18n } from "./translations.js";
 
 const i18n = new I18n();
 
-const MONITOR_PORT = 8222;
-const MONITOR_HOST = "localhost";
+const MONITOR_URL_DEFAULT = "localhost:8222";
 const NATS_HOST_DEFAULT = "localhost:8080";
 
 const LS_NATS_HOST = "nats_host";
+const LS_MONITOR_URL = "monitor_url";
 const LS_PROTOCOL = "nats_protocol";
 const LS_AUTH_METHOD = "nats_auth_method";
 const LS_USERNAME = "nats_username";
@@ -21,6 +22,7 @@ let activeConnections = [];
 let subscriptions = {};
 let persistedTopics = [];
 let currentTopic = null;
+let monitorUrl = MONITOR_URL_DEFAULT;
 
 const DB_NAME = "NATS_HISTORY";
 const DB_VERSION = 1;
@@ -79,6 +81,7 @@ const tokenInput = document.getElementById("tokenInput");
 const tokenSecretInput = document.getElementById("tokenSecretInput");
 const authRadios = document.querySelectorAll('input[name="authMethod"]');
 const languageSelector = document.getElementById("languageSelector");
+const monitorUrlInput = document.getElementById("monitorUrl");
 
 function updateUILanguage() {
   document.querySelectorAll("[data-i18n]").forEach((element) => {
@@ -211,6 +214,8 @@ function updateConnectionStatus(isConnected) {
     usernameInput.disabled = true;
     passwordInput.disabled = true;
     tokenSecretInput.disabled = true;
+    monitorUrlInput.disabled = true;
+
     publicEventContainer.classList.remove("hidden");
     subscribeEventContainer.classList.remove("hidden");
     authRadios.forEach((radio) => {
@@ -230,6 +235,7 @@ function updateConnectionStatus(isConnected) {
     clearHistoryBtn.disabled = true;
     showDetailsBtn.disabled = true;
     subscribeBtn.disabled = true;
+    monitorUrlInput.disabled = false;
     natsUrlInput.disabled = false;
     protocolSelect.disabled = false;
     usernameInput.disabled = false;
@@ -277,6 +283,7 @@ function getSelectedAuthMethod() {
 
 function saveConnectionConfig() {
   localStorage.setItem(LS_NATS_HOST, natsUrlInput.value);
+  localStorage.setItem(LS_MONITOR_URL, monitorUrlInput.value);
   localStorage.setItem(LS_PROTOCOL, protocolSelect.value);
   localStorage.setItem(LS_AUTH_METHOD, getSelectedAuthMethod());
   localStorage.setItem(LS_USERNAME, usernameInput.value);
@@ -285,6 +292,9 @@ function saveConnectionConfig() {
 
 function loadConnectionConfig() {
   natsUrlInput.value = localStorage.getItem(LS_NATS_HOST) || NATS_HOST_DEFAULT;
+  monitorUrlInput.value =
+    localStorage.getItem(LS_MONITOR_URL) || MONITOR_URL_DEFAULT;
+  monitorUrl = monitorUrlInput.value;
   protocolSelect.value = localStorage.getItem(LS_PROTOCOL) || "ws";
 
   const loadedAuthMethod = localStorage.getItem(LS_AUTH_METHOD) || "none";
@@ -490,7 +500,7 @@ async function connectNATS() {
   saveConnectionConfig();
 
   const connectOptions = {
-    servers: [natsUrl],
+    servers: [host],
   };
 
   if (authMethod === "user_pass") {
@@ -531,6 +541,45 @@ async function connectNATS() {
 
     nc = await Nats.connect(connectOptions);
 
+    (async () => {
+      for await (const status of nc.status()) {
+        switch (status.type) {
+          case "disconnect":
+            log(
+              "warn",
+              `${i18n.t("logConnectionDisconnected")}: ${status.data}`
+            );
+            break;
+          case "reconnect":
+            log("info", `${i18n.t("logConnectionReconnecting")}...`);
+            break;
+          case "reconnecting":
+            log(
+              "info",
+              `${i18n.t("logConnectionReconnectAttempt")} ${status.data}`
+            );
+            break;
+          case "error":
+            log(
+              "error",
+              `${i18n.t("logConnectionStatusError")}: ${status.data}`
+            );
+            if (status.data && typeof status.data === "object") {
+              if (status.data.code) {
+                log("error", `${i18n.t("logErrorCode")}: ${status.data.code}`);
+              }
+              if (status.data.message) {
+                log(
+                  "error",
+                  `${i18n.t("logServerError")}: ${status.data.message}`
+                );
+              }
+            }
+            break;
+        }
+      }
+    })();
+
     nc.closed().then((err) => {
       updateConnectionStatus(false);
       if (err) {
@@ -545,6 +594,30 @@ async function connectNATS() {
 
     fetchMonitoringData();
     setInterval(fetchMonitoringData, 5000);
+
+    if (persistedTopics.length > 0) {
+      const topicsToSubscribe = [...persistedTopics];
+      const subscriptionPromises = topicsToSubscribe.map((topic) =>
+        subscribeNATS(topic)
+      );
+      const results = await Promise.allSettled(subscriptionPromises);
+
+      const successful = results.filter(
+        (r) => r.status === "fulfilled" && r.value === true
+      ).length;
+      const failed = results.filter(
+        (r) => r.status === "rejected" || r.value === false
+      ).length;
+
+      if (failed > 0) {
+        log(
+          "warn",
+          `${i18n.t("logSubscriptionSummary")}: ${successful} ${i18n.t(
+            "logSuccessful"
+          )}, ${failed} ${i18n.t("logFailed")}`
+        );
+      }
+    }
   } catch (e) {
     console.error(e);
     updateConnectionStatus(false);
@@ -559,11 +632,12 @@ async function copyPayloadToClipboard() {
   const text = modalPayloadContent.textContent;
   try {
     await navigator.clipboard.writeText(text);
-    showToast(i18n.t("toastCopied"));
+    showToast(i18n.t("toastCopied"), "success");
     document.getElementById("payloadModal").classList.add("hidden");
     document.getElementById("payloadModal").classList.remove("flex");
   } catch (err) {
     log("error", i18n.t("logCopyError"));
+    showToast(`❌ ${i18n.t("logCopyError")}`, "error");
   }
 }
 
@@ -576,6 +650,7 @@ function validateAndFormatJson(text) {
   }
 }
 
+// TODO Check not to save the topic when it does not have permissions.
 async function publishMessage(subject, payload) {
   const pubSubject = subject || publishSubjectInput.value.trim();
   const rawPayload = payload || publishPayloadInput.value.trim();
@@ -613,7 +688,7 @@ async function publishMessage(subject, payload) {
     const sc = Nats.StringCodec();
     const data = sc.encode(finalPayload);
 
-    nc.publish(pubSubject, data);
+    await nc.publish(pubSubject, data);
     await nc.flush();
 
     log(
@@ -625,10 +700,19 @@ async function publishMessage(subject, payload) {
     );
 
     if (!persistedTopics.includes(pubSubject)) {
-      addTopicToPersistence(pubSubject);
+      // addTopicToPersistence(pubSubject);
     }
   } catch (e) {
-    log("error", `${i18n.t("logPublishError")} ${e.message}`);
+    log("error", `${i18n.t("logPublishError")} [${pubSubject}]: ${e.message}`);
+
+    if (e.code) {
+      log("error", `${i18n.t("logErrorCode")}: ${e.code}`);
+    }
+    if (e.chainedError) {
+      log("error", `${i18n.t("logServerError")}: ${e.chainedError}`);
+    }
+
+    showToast(`❌ ${i18n.t("logPublishError")} ${e.message}`, "error");
   }
 }
 
@@ -678,48 +762,117 @@ async function subscribeToTopic() {
   if (persistedTopics.includes(subject)) {
     log("warn", `${i18n.t("logTopicExists")} [${subject}]`);
     if (wsConnected && !subscriptions[subject]) {
-      subscribeNATS(subject);
+      await subscribeNATS(subject);
     }
     return;
   }
 
-  addTopicToPersistence(subject);
   if (wsConnected) {
-    subscribeNATS(subject);
+    const success = await subscribeNATS(subject);
+    if (success && persistedTopics.includes(subject)) {
+      topicSelector.value = subject;
+      handleTopicSelection(subject);
+    }
+  } else {
+    addTopicToPersistence(subject);
+    topicSelector.value = subject;
+    handleTopicSelection(subject);
   }
-  topicSelector.value = subject;
-  handleTopicSelection(subject);
 }
 
-function subscribeNATS(subject) {
+async function subscribeNATS(subject) {
   if (!nc || !wsConnected) {
-    return;
+    return false;
   }
-  if (subscriptions[subject]) return;
+  if (subscriptions[subject]) return true;
 
   try {
     const sub = nc.subscribe(subject);
     const sc = Nats.StringCodec();
 
     subscriptions[subject] = sub;
+
+    if (!persistedTopics.includes(subject)) {
+      addTopicToPersistence(subject);
+    }
+
     updateSubscriptionsList();
     log("success", `${i18n.t("logSubscribed")} [${subject}]`);
 
     (async () => {
-      for await (const m of sub) {
-        const payload = sc.decode(m.data);
-        log("receive", `[${m.subject}]: ${payload.substring(0, 50)}...`);
+      try {
+        for await (const m of sub) {
+          const payload = sc.decode(m.data);
+          log("receive", `[${m.subject}]: ${payload.substring(0, 50)}...`);
 
-        await saveMessage(m.subject, payload);
+          await saveMessage(m.subject, payload);
 
-        if (currentTopic === m.subject) {
-          renderMessageHistory(m.subject);
+          if (currentTopic === m.subject) {
+            renderMessageHistory(m.subject);
+          }
+        }
+      } catch (err) {
+        if (
+          err.code === "PERMISSIONS_VIOLATION" ||
+          err.message.includes("permissions")
+        ) {
+          log(
+            "error",
+            `${i18n.t("logPermissionError")} [${subject}]: ${err.message}`
+          );
+          showToast(`❌ ${i18n.t("logPermissionError")} [${subject}]`, "error");
+        } else {
+          log(
+            "error",
+            `${i18n.t("logSubscriptionStreamError")} [${subject}]: ${
+              err.message
+            }`
+          );
+        }
+
+        if (err.code) {
+          log("error", `${i18n.t("logErrorCode")}: ${err.code}`);
+        }
+        if (err.chainedError) {
+          log("error", `${i18n.t("logServerError")}: ${err.chainedError}`);
+        }
+
+        if (subscriptions[subject]) {
+          try {
+            subscriptions[subject].unsubscribe();
+          } catch (unsubErr) {}
+          delete subscriptions[subject];
+          removeTopicFromPersistence(subject);
+          updateSubscriptionsList();
         }
       }
     })();
   } catch (e) {
     log("error", `${i18n.t("logSubscribeError")} [${subject}]: ${e.message}`);
+
+    if (
+      e.code === "PERMISSIONS_VIOLATION" ||
+      e.message.includes("permissions")
+    ) {
+      log("error", `${i18n.t("logPermissionError")} [${subject}]`);
+      showToast(`❌ ${i18n.t("logPermissionError")} [${subject}]`, "error");
+    }
+
+    if (e.code) {
+      log("error", `${i18n.t("logErrorCode")}: ${e.code}`);
+    }
+    if (e.chainedError) {
+      log("error", `${i18n.t("logServerError")}: ${e.chainedError}`);
+    }
+
+    if (subscriptions[subject]) {
+      delete subscriptions[subject];
+      updateSubscriptionsList();
+    }
+
+    return false;
   }
+  return true;
 }
 
 function unsubscribe(subject) {
@@ -837,13 +990,36 @@ function handleTopicSelection(topic) {
   }
 }
 
-function showToast(message) {
+function showToast(message, type = "info") {
   const toastContainer = document.getElementById("toastContainer");
   const toastMessage = document.getElementById("toastMessage");
   const mainToast = document.getElementById("mainToast");
 
   if (toastContainer && toastMessage && mainToast) {
     toastMessage.textContent = message;
+
+    mainToast.classList.remove(
+      "bg-indigo-600",
+      "bg-red-600",
+      "bg-green-600",
+      "bg-yellow-600"
+    );
+    switch (type) {
+      case "error":
+        mainToast.classList.add("bg-red-600");
+        break;
+      case "success":
+        mainToast.classList.add("bg-green-600");
+        break;
+      case "warning":
+        mainToast.classList.add("bg-yellow-600");
+        break;
+      case "info":
+      default:
+        mainToast.classList.add("bg-indigo-600");
+        break;
+    }
+
     toastContainer.classList.remove("opacity-0", "pointer-events-none");
     toastContainer.classList.add("opacity-100");
 
@@ -856,7 +1032,7 @@ function showToast(message) {
 
       toastContainer.classList.remove("opacity-100");
       toastContainer.classList.add("opacity-0", "pointer-events-none");
-    }, 3000);
+    }, 4000);
   }
 }
 
@@ -994,7 +1170,7 @@ async function fetchMonitoringData() {
   }
 
   try {
-    const connzResponse = await fetch(`${MONITOR_URL}/connz`);
+    const connzResponse = await fetch(`http://${monitorUrl}/connz`);
     if (!connzResponse.ok) throw new Error(`Status: ${connzResponse.status}`);
 
     const connzData = await connzResponse.json();
@@ -1006,7 +1182,7 @@ async function fetchMonitoringData() {
     activeConnections = connzData.connections || [];
 
     try {
-      const jszResponse = await fetch(`${MONITOR_URL}/jsz?streams=true`);
+      const jszResponse = await fetch(`http://${monitorUrl}/jsz?streams=true`);
       if (!jszResponse.ok) throw new Error(`Status: ${jszResponse.status}`);
       const jszData = await jszResponse.json();
 
@@ -1019,7 +1195,7 @@ async function fetchMonitoringData() {
     if (nc) {
       log(
         "error",
-        `${i18n.t("logMonitorError")} ${MONITOR_URL} ${i18n.t(
+        `${i18n.t("logMonitorError")} ${monitorUrl} ${i18n.t(
           "logCorsError"
         )}. ${e.message}`
       );
@@ -1121,6 +1297,13 @@ if (passwordInput)
   passwordInput.addEventListener("input", saveConnectionConfig);
 if (tokenSecretInput)
   tokenSecretInput.addEventListener("input", saveConnectionConfig);
+if (monitorUrlInput) {
+  monitorUrlInput.addEventListener("input", () => {
+    monitorUrl = monitorUrlInput.value.trim() || MONITOR_URL_DEFAULT;
+    saveConnectionConfig();
+    log("info", `${i18n.t("logMonitorUrlChanged")}: ${monitorUrl}`);
+  });
+}
 
 if (publishPayloadInput) {
   publishPayloadInput.addEventListener("input", () => {
@@ -1197,7 +1380,12 @@ async function initialize() {
 
   const savedHost = localStorage.getItem(LS_NATS_HOST);
   if (savedHost && savedHost !== NATS_HOST_DEFAULT) {
-    log("info", `${logAutoConnect}: ${savedHost}.${logAutoConnectAttempt}`);
+    log(
+      "info",
+      `${i18n.t("logAutoConnect")}: ${savedHost}.${i18n.t(
+        "logAutoConnectAttempt"
+      )}`
+    );
     await connectNATS();
   } else {
     log("info", i18n.t("logInterfaceReady"));
@@ -1206,3 +1394,4 @@ async function initialize() {
 }
 
 initialize();
+

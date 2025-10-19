@@ -20,6 +20,7 @@ export const translations = {
     protocol: "Protocolo",
     hostPort: "Host y Puerto (Ej: localhost:8080)",
     hostPortPlaceholder: "Host:Puerto",
+    monitorUrl: "URL de Monitoreo (Ej: localhost:8222)",
     connectBtn: "Conectar",
     disconnectBtn: "Desconectar",
     statusLabel: "Estado:",
@@ -147,6 +148,18 @@ export const translations = {
     logCopyError:
       "Fallo al intentar copiar el payload. Asegúrate de que tu navegador lo permita.",
     logFormatError: "No se puede formatear. No es un JSON válido.",
+    logMonitorUrlChanged: "URL de monitoreo actualizada",
+    logErrorCode: "Código de error",
+    logServerError: "Error del servidor",
+    logPermissionError: "Error de permisos - Acceso denegado al tópico",
+    logSubscriptionStreamError: "Error en el stream de suscripción",
+    logConnectionDisconnected: "Conexión desconectada",
+    logConnectionReconnecting: "Reconectando al servidor",
+    logConnectionReconnectAttempt: "Intento de reconexión",
+    logConnectionStatusError: "Error de estado de conexión",
+    logSubscriptionSummary: "Resumen de suscripciones",
+    logSuccessful: "exitosas",
+    logFailed: "fallidas",
 
     // Confirm Messages
     confirmClearHistory:
@@ -179,6 +192,7 @@ export const translations = {
     protocol: "Protocol",
     hostPort: "Host and Port (Ex: localhost:8080)",
     hostPortPlaceholder: "Host:Port",
+    monitorUrl: "Monitor URL (Ex: localhost:8222)",
     connectBtn: "Connect",
     disconnectBtn: "Disconnect",
     statusLabel: "Status:",
@@ -303,6 +317,18 @@ export const translations = {
     logAutoConnectAttempt: "Attempting automatic connection...",
     logCopyError: "Failed to copy payload. Make sure your browser allows it.",
     logFormatError: "Cannot format. Not valid JSON.",
+    logMonitorUrlChanged: "Monitor URL updated",
+    logErrorCode: "Error code",
+    logServerError: "Server error",
+    logPermissionError: "Permission error - Access denied to topic",
+    logSubscriptionStreamError: "Subscription stream error",
+    logConnectionDisconnected: "Connection disconnected",
+    logConnectionReconnecting: "Reconnecting to server",
+    logConnectionReconnectAttempt: "Reconnection attempt",
+    logConnectionStatusError: "Connection status error",
+    logSubscriptionSummary: "Subscription summary",
+    logSuccessful: "successful",
+    logFailed: "failed",
 
     // Confirm Messages
     confirmClearHistory:
@@ -357,3 +383,4 @@ export class I18n {
     return this.currentLang;
   }
 }
+
