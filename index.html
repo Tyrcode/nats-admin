@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="es" class="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="shortcut icon"
+      href="https://nats.io/img/logos/nats-icon-white.png"
+      type="image/x-icon"
+    />
+    <title>NATS Admin Pro V1 - Herramienta Definitiva</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark-dimmed.min.css"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  </head>
+  <body class="p-4 md:p-8">
+    <div class="mx-auto">
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-extrabold flex items-center">
+          ⚡ <span data-i18n="appTitle">NATS Admin Pro V1</span>
+          <span
+            class="text-sm font-semibold text-green-600 ml-4 border border-green-300 bg-green-100 dark:bg-green-800 dark:border-green-700 dark:text-green-300 px-3 py-1 rounded-full shadow-md"
+            data-i18n="brandName"
+          >
+            Tyrcode
+          </span>
+        </h1>
+        <div class="flex gap-3 items-center">
+          <select
+            id="languageSelector"
+            class="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-semibold py-2 px-4 rounded-full transition duration-300 shadow-md cursor-pointer"
+          >
+            <option value="es">🇪🇸 Español</option>
+            <option value="en">🇺🇸 English</option>
+          </select>
+
+          <button
+            id="darkModeToggle"
+            class="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-semibold py-2 px-4 rounded-full transition duration-300 shadow-md flex items-center"
+          >
+            <span class="icon-light" data-i18n="lightMode">☀️ Modo Claro</span>
+            <span class="icon-dark hidden" data-i18n="darkMode"
+              >🌙 Modo Oscuro</span
+            >
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-7 gap-6">
+        <div class="md:col-span-2 flex flex-col gap-6">
+          <div class="card p-5">
+            <h2
+              class="text-2xl font-bold mb-4 border-b pb-2"
+              data-i18n="connectionTitle"
+            >
+              Conexión y Estado
+            </h2>
+
+            <div class="mb-4 space-y-3">
+              <div>
+                <h3
+                  class="text-sm font-medium mb-2"
+                  data-i18n="authMethodTitle"
+                >
+                  Método de Autenticación
+                </h3>
+                <ul class="grid w-full gap-4 md:grid-cols-3">
+                  <li>
+                    <input
+                      type="radio"
+                      id="auth-none"
+                      name="authMethod"
+                      value="none"
+                      class="hidden peer"
+                      required
+                      checked
+                    />
+                    <label
+                      for="auth-none"
+                      class="inline-flex items-center justify-center w-full p-3 border border-2 border-gray-200 rounded-lg cursor-pointer peer-checked:border-amber-600 peer-checked:text-amber-600"
+                    >
+                      <div class="block">
+                        <div
+                          class="w-full text-base font-semibold"
+                          data-i18n="authNone"
+                        >
+                          🔓 Ninguno
+                        </div>
+                      </div>
+                    </label>
+                  </li>
+                  <li>
+                    <input
+                      type="radio"
+                      id="auth-user-pass"
+                      name="authMethod"
+                      value="user_pass"
+                      class="hidden peer"
+                    />
+                    <label
+                      for="auth-user-pass"
+                      class="inline-flex items-center justify-center w-full p-3 border border-2 border-gray-200 rounded-lg cursor-pointer peer-checked:border-amber-600 peer-checked:text-amber-600"
+                    >
+                      <div class="block">
+                        <div
+                          class="w-full text-base font-semibold"
+                          data-i18n="authUserPass"
+                        >
+                          👤 User/Pass
+                        </div>
+                      </div>
+                    </label>
+                  </li>
+                  <li>
+                    <input
+                      type="radio"
+                      id="auth-token"
+                      name="authMethod"
+                      value="token"
+                      class="hidden peer"
+                    />
+                    <label
+                      for="auth-token"
+                      class="inline-flex items-center justify-center w-full p-3 border border-2 border-gray-200 rounded-lg cursor-pointer peer-checked:border-amber-600 peer-checked:text-amber-600"
+                    >
+                      <div class="block">
+                        <div
+                          class="w-full text-base font-semibold"
+                          data-i18n="authToken"
+                        >
+                          🔑 Token
+                        </div>
+                      </div>
+                    </label>
+                  </li>
+                </ul>
+              </div>
+
+              <div id="authInputsContainer">
+                <div id="userPassInputs" class="space-y-3 hidden">
+                  <div>
+                    <label
+                      for="usernameInput"
+                      class="block text-sm font-medium mb-1"
+                      data-i18n="username"
+                    >
+                      Usuario
+                    </label>
+                    <input
+                      id="usernameInput"
+                      type="text"
+                      autocomplete="false"
+                      class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="usuario NATS"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      for="passwordInput"
+                      class="block text-sm font-medium mb-1"
+                      data-i18n="password"
+                    >
+                      Contraseña
+                    </label>
+                    <input
+                      id="passwordInput"
+                      type="password"
+                      autocomplete="false"
+                      class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="contraseña"
+                    />
+                  </div>
+                </div>
+                <div id="tokenInput" class="space-y-3 hidden">
+                  <div>
+                    <label
+                      for="tokenSecretInput"
+                      class="block text-sm font-medium mb-1"
+                      data-i18n="token"
+                    >
+                      Token (JWT o Secreto)
+                    </label>
+                    <input
+                      id="tokenSecretInput"
+                      type="password"
+                      autocomplete="false"
+                      class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Tu token secreto o JWT"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="flex flex-col md:flex-row gap-4 mb-4 items-end">
+              <div class="flex md:flex-row gap-1 items-end md:w-2/3">
+                <div>
+                  <label
+                    for="protocolSelect"
+                    class="block text-sm font-medium mb-1"
+                    data-i18n="protocol"
+                  >
+                    Protocolo
+                  </label>
+                  <select
+                    id="protocolSelect"
+                    class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="ws">ws://</option>
+                    <option value="wss">wss://</option>
+                  </select>
+                </div>
+                <div class="w-full md:w-2/3">
+                  <label
+                    for="natsUrl"
+                    class="block text-sm font-medium mb-1"
+                    data-i18n="hostPort"
+                    >Host y Puerto (Ej: localhost:8080)</label
+                  >
+                  <input
+                    id="natsUrl"
+                    type="text"
+                    class="w-full p-2 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                    value="localhost:8080"
+                    placeholder="Host:Puerto"
+                  />
+                </div>
+              </div>
+              <button
+                id="connectBtn"
+                class="w-full md:w-1/3 disabled:opacity-50 bg-green-600 hover:bg-green-700 text-white font-bold text-base py-2 px-6 rounded-lg transition duration-150 shadow-lg hover:shadow-xl"
+                data-i18n="connectBtn"
+              >
+                Conectar
+              </button>
+            </div>
+
+            <div
+              id="statusIndicator"
+              class="text-base font-semibold p-3 rounded-lg flex items-center bg-gray-50 border border-gray-200"
+            >
+              <span id="statusDot" class="status-dot bg-red-500"></span>
+              <span data-i18n="statusLabel">Estado:</span>
+              <span
+                id="connectionStatus"
+                class="ml-1 text-red-700"
+                data-i18n="statusDisconnected"
+                >Desconectado</span
+              >
+            </div>
+
+            <div
+              id="logConsole"
+              class="bg-gray-900 text-green-400 p-3 rounded-lg text-sm mt-3 h-32 overflow-y-auto shadow-inner"
+            >
+              <p class="font-mono text-gray-400" data-i18n="logReady">
+                Estado: Listo. Cargando configuración guardada...
+              </p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div class="card p-4 flex flex-col h-full">
+              <h3 class="text-lg font-medium" data-i18n="activeConnections">
+                Conexiones Activas
+              </h3>
+              <p
+                id="connectionsCount"
+                class="text-4xl font-extrabold mt-1 mb-2"
+              >
+                N/A
+              </p>
+              <p class="text-sm mb-auto" data-i18n="monitoring">Monitoreo</p>
+              <button
+                id="showDetailsBtn"
+                class="text-sm font-semibold mt-3 p-3 border border-sky-500 text-sky-500 bg-transparent hover:bg-sky-500 hover:text-white rounded-md transition duration-150 shadow-sm disabled:opacity-50"
+                disabled
+              >
+                <span data-i18n="viewDetails">Ver Detalles</span> (<span
+                  id="detailsCount"
+                  >0</span
+                >)
+              </button>
+            </div>
+            <div class="card p-4 flex flex-col h-full">
+              <h3 class="text-lg font-medium" data-i18n="totalStreams">
+                Streams Totales
+              </h3>
+              <p id="streamsCount" class="text-4xl font-extrabold mt-1 mb-2">
+                N/A
+              </p>
+              <p class="text-sm" data-i18n="jetstream">JetStream</p>
+            </div>
+          </div>
+          <div class="card p-5" id="publicEventContainer">
+            <h2
+              class="text-2xl font-bold mb-4 border-b pb-2"
+              data-i18n="publishTitle"
+            >
+              Publicar Mensaje
+            </h2>
+            <div class="grid grid-cols-1 gap-4">
+              <div>
+                <label
+                  for="publishSubject"
+                  class="block text-sm font-medium mb-1"
+                  data-i18n="topic"
+                  >Tópico (Subject)</label
+                >
+                <input
+                  id="publishSubject"
+                  type="text"
+                  class="w-full p-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
+                  placeholder="mi.topico.ejemplo"
+                  value="evento.test"
+                  list="subscribedTopicsDatalist"
+                />
+                <datalist id="subscribedTopicsDatalist"> </datalist>
+              </div>
+              <div>
+                <div class="flex justify-between items-center mb-1">
+                  <label
+                    for="publishPayload"
+                    class="block text-sm font-medium"
+                    data-i18n="payload"
+                    >Payload (JSON)</label
+                  >
+                  <button
+                    id="formatJsonBtn"
+                    class="border border-amber-500 text-amber-500 bg-transparent hover:bg-amber-500 hover:text-white font-bold py-3 px-4 rounded-lg transition duration-150 shadow-xl disabled:opacity-50"
+                    data-i18n="formatJson"
+                  >
+                    Formatear JSON
+                  </button>
+                </div>
+                <textarea
+                  id="publishPayload"
+                  class="w-full p-3 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 transition duration-200"
+                  placeholder='{"data": "tu_mensaje_json", "timestamp": "ISO_DATE"}'
+                >
+{
+  "contador": 1,
+  "mensaje": "Hola NATS v5"
+}</textarea
+                >
+              </div>
+              <div class="flex items-end">
+                <button
+                  id="publishBtn"
+                  class="w-full bg-sky-500 hover:bg-sky-700 text-white font-bold py-3 px-4 rounded-lg transition duration-150 shadow-xl disabled:opacity-50"
+                  disabled
+                  data-i18n="publishBtn"
+                >
+                  🚀 Publicar
+                </button>
+              </div>
+            </div>
+            <p
+              id="payloadErrorMsg"
+              class="text-sm font-semibold text-red-600 mt-2 hidden"
+              data-i18n="jsonError"
+            >
+              ⚠️ Error de JSON: El payload no es un JSON válido.
+            </p>
+          </div>
+          <div
+            class="card p-5 flex flex-col h-full"
+            id="subscribeEventContainer"
+          >
+            <h3
+              class="text-2xl font-bold mb-4 border-b pb-2"
+              data-i18n="subscribeTitle"
+            >
+              Suscripciones Locales
+            </h3>
+            <div class="flex gap-2 mb-4">
+              <input
+                id="subscribeSubject"
+                type="text"
+                class="w-2/3 p-2 border border-gray-300 rounded-lg text-sm"
+                placeholder="topico.a.suscribir"
+                value="evento.test"
+              />
+              <button
+                id="subscribeBtn"
+                class="w-1/3 bg-amber-500 hover:bg-yellow-500 text-white font-semibold py-3 px-4 rounded-lg text-sm shadow-md disabled:opacity-50"
+                disabled
+                data-i18n="subscribeBtn"
+              >
+                + Suscribir
+              </button>
+            </div>
+            <div
+              id="activeSubscriptions"
+              class="mt-1 flex flex-col gap-2 flex-grow"
+            >
+              <p class="text-sm italic" data-i18n="loadingTopics">
+                Cargando tópicos guardados...
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="md:col-span-5">
+          <div id="connectionDetailsContainer" class="card p-5 mb-6 hidden">
+            <h2
+              class="text-xl font-semibold mb-3 border-b pb-2"
+              data-i18n="connectionDetailsTitle"
+            >
+              Detalles de Conexiones Activas
+            </h2>
+            <div id="connectionList" class="overflow-x-auto">
+              <p class="italic" data-i18n="loadingDetails">
+                Cargando detalles...
+              </p>
+            </div>
+          </div>
+          <div class="card p-5 h-full flex flex-col">
+            <h2
+              class="text-2xl font-bold mb-4 flex justify-between items-center border-b pb-2"
+              data-i18n="historyTitle"
+            >
+              Historial de Mensajes
+            </h2>
+
+            <div class="flex flex-col md:flex-row gap-4 items-end mb-4 pb-4">
+              <div class="w-full md:w-1/2">
+                <label
+                  for="topicSelector"
+                  class="block text-sm font-medium mb-1"
+                  data-i18n="selectTopic"
+                  >Selecciona Tópico para Historial</label
+                >
+                <select
+                  id="topicSelector"
+                  class="w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                  onchange="window.handleTopicSelection(this.value)"
+                >
+                  <option
+                    value=""
+                    disabled
+                    selected
+                    data-i18n="subscribedTopics"
+                  >
+                    --- Tópicos Suscritos ---
+                  </option>
+                </select>
+              </div>
+
+              <div class="w-full md:w-1/2 flex justify-end items-end h-full">
+                <button
+                  id="clearHistoryBtn"
+                  class="text-sm bg-red-100 hover:bg-red-200 py-2 px-4 rounded-lg font-semibold border border-red-300 disabled:opacity-50 dark:bg-red-900 dark:text-red-300 dark:border-red-700 dark:hover:bg-red-800"
+                  disabled
+                  data-i18n="clearHistory"
+                >
+                  🗑️ Limpiar Historial del Tópico Seleccionado
+                </button>
+              </div>
+            </div>
+
+            <div id="currentTopicDisplay" class="mb-4 text-lg font-semibold">
+              <span data-i18n="currentTopic">Tópico actual:</span>
+              <span
+                id="selectedTopicName"
+                class="font-normal italic"
+                data-i18n="noTopicSelected"
+                >Ninguno</span
+              >
+            </div>
+
+            <div id="historyTableContainer" class="flex-grow">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="sticky top-0 shadow-sm">
+                  <tr>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider w-1/12"
+                      data-i18n="tableId"
+                    >
+                      ID
+                    </th>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider w-3/12"
+                      data-i18n="tableDateTime"
+                    >
+                      Fecha/Hora
+                    </th>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider w-5/12"
+                      data-i18n="tablePayload"
+                    >
+                      Payload (Vista Previa)
+                    </th>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider w-3/12"
+                      data-i18n="tableActions"
+                    >
+                      Acciones
+                    </th>
+                  </tr>
+                </thead>
+                <tbody
+                  id="messagesHistoryTableBody"
+                  class="divide-y divide-gray-200"
+                >
+                  <tr>
+                    <td
+                      colspan="4"
+                      class="px-6 py-4 text-center italic"
+                      data-i18n="noMessagesLoaded"
+                    >
+                      No hay mensajes cargados. Selecciona un tópico.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="payloadModal"
+      class="fixed inset-0 bg-gray-600 bg-opacity-70 hidden items-center justify-center p-4 z-50 transition-opacity duration-300"
+    >
+      <div class="bg-gray-900 rounded-lg w-full max-w-xl shadow-2xl">
+        <div
+          class="p-6 border-b border-gray-700 flex justify-between items-center"
+        >
+          <h3 class="text-xl font-bold text-white" data-i18n="modalTitle">
+            Payload Completo
+          </h3>
+          <button
+            onclick="document.getElementById('payloadModal').classList.add('hidden'); document.getElementById('payloadModal').classList.remove('flex')"
+            class="text-gray-400 hover:text-white text-2xl"
+          >
+            &times;
+          </button>
+        </div>
+
+        <div class="p-4">
+          <pre class="rounded-lg overflow-x-auto text-sm font-mono max-h-96">
+                    <code id="modalPayloadContent" class="json bg-transparent p-0"></code>
+                </pre>
+        </div>
+
+        <div class="p-6 pt-0 flex justify-end gap-3">
+          <button
+            id="copyPayloadBtn"
+            class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-150"
+            data-i18n="copyPayload"
+          >
+            Copiar Payload
+          </button>
+          <button
+            onclick="document.getElementById('payloadModal').classList.add('hidden'); document.getElementById('payloadModal').classList.remove('flex')"
+            class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-150"
+            data-i18n="closeModal"
+          >
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="toastContainer"
+      class="fixed bottom-5 right-5 z-[100] transition-opacity duration-300 pointer-events-none opacity-0"
+    >
+      <div
+        id="mainToast"
+        class="bg-indigo-600 text-white p-4 rounded-lg shadow-2xl flex items-center transform scale-95"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-6 w-6 mr-3"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+          />
+        </svg>
+        <span id="toastMessage" class="text-sm font-semibold"
+          >¡Copiado al portapapeles!</span
+        >
+      </div>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>

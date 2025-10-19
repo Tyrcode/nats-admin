@@ -1,0 +1,29 @@
+version: "3.8"
+
+services:
+  nats:
+    image: nats:latest
+    container_name: NATS-JETSTREAM
+    command: -c /nats-server.conf
+    ports:
+      # Port 4222: Main port for client connection (NATS protocol)
+      - "4222:4222"
+      # Port 8222: HTTP Port for JetStream Monitoring and APIs
+      - "8222:8222"
+      # Port 8080: WebSocket port for web clients
+      - "8080:8080"
+    volumes:
+      # NATS configuration
+      - ./nats-server.conf:/nats-server.conf:ro
+      # Mount a volume for persistence of JetStream Streams
+      - nats_data:/data
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8222/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  nats_data:
+    driver: local

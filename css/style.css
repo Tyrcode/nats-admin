@@ -1,0 +1,133 @@
+/* Tus estilos existentes - sin cambios */
+body {
+  font-family: "Inter", sans-serif;
+  background-color: #f1f5f9;
+  color: #1e293b;
+  transition: background-color 0.3s, color 0.3s;
+}
+.card {
+  background-color: white;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.card:hover {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+.dark body {
+  background-color: #0f172a;
+  color: #e2e8f0;
+}
+.dark .card {
+  background-color: #1e293b;
+  border-color: #334155;
+  color: #e2e8f0;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4),
+    0 4px 6px -2px rgba(0, 0, 0, 0.2);
+}
+.dark .card:hover {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4),
+    0 8px 10px -6px rgba(0, 0, 0, 0.2);
+}
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 8px;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5);
+}
+#activeSubscriptions {
+  max-height: 15rem;
+  overflow-y: auto;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e2e8f0;
+  transition: border-color 0.3s;
+}
+.dark #activeSubscriptions {
+  border-color: #334155;
+}
+.topic-active {
+  background-color: #d1fae5;
+  border: 2px solid #10b981;
+  color: #065f46;
+  font-weight: 600;
+  transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+}
+.dark .topic-active {
+  background-color: #065f46;
+  border-color: #10b981;
+  color: #d1fae5;
+}
+input,
+textarea,
+select {
+  background-color: white;
+  border: 1px solid #d1d5db;
+  color: #1f2937;
+  transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+}
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: #334155;
+  border-color: #475569;
+  color: #f3f4f6;
+}
+#publishPayload {
+  min-height: 200px;
+  resize: vertical;
+  font-family: "Consolas", "Monaco", "Courier New", monospace;
+  tab-size: 4;
+  background-color: #1e293b;
+  color: #e2e8f0;
+  border: 1px solid #334155;
+  transition: none;
+}
+.payload-error {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.4);
+}
+#logConsole {
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: #1f2937;
+  height: 128px;
+}
+#messagesHistoryTableBody tr:hover {
+  background-color: #eff6ff;
+}
+.dark #messagesHistoryTableBody tr:hover {
+  background-color: #334155;
+}
+#statusIndicator {
+  background-color: #f9fafb;
+  border-color: #e5e7eb;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+.dark #statusIndicator {
+  background-color: #334155;
+  border-color: #475569;
+}
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #94a3b8;
+  border-radius: 10px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background-color: #475569;
+}
+#authInputsContainer {
+  transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+}
+#authInputsContainer.open {
+  max-height: 500px;
+  opacity: 1;
+}
