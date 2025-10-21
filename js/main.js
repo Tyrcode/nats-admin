@@ -500,7 +500,7 @@ async function connectNATS() {
   saveConnectionConfig();
 
   const connectOptions = {
-    servers: [host],
+    servers: [`${protocol}://${host}`],
   };
 
   if (authMethod === "user_pass") {
