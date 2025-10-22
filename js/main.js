@@ -406,7 +406,7 @@ function initDB() {
         keyPath: "id",
         autoIncrement: true,
       });
-      store.createIndex("topico_idx", "topico", { unique: false });
+      store.createIndex("topic_idx", "topic", { unique: false });
       log("info", i18n.t("logDBUpdate"));
     };
   });
